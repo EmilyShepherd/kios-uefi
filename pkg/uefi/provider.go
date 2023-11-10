@@ -1,6 +1,8 @@
 package uefi
 
 import (
+	"net"
+	"sort"
 	"strings"
 
 	"github.com/EmilyShepherd/kios-go-sdk/pkg/bootstrap"
@@ -43,6 +45,33 @@ func (p *Provider) GetHostname() string {
 	return string(GetValue(Hostname))
 }
 
+// Reads the desired nameservers from the EFI variables
+// EFI variables with the name NameserverX, where X is any string, will
+// be read and interpreted acording, depending on the value length:
+//   - 4 bytes = Binary representation of IPv4 address
+//   - 16+ bytes - Binary representation of IPv6 address. Bytes on the end
+//     are interpreted as a scope zone.
+func (p *Provider) GetNameservers() (nameservers []string) {
+	ns := GetMultiValue("Nameserver")
+	nameservers = make([]string, len(ns))
+	sort.Strings(nameservers)
+
+	i := 0
+	for _, value := range ns {
+		if len(value) == net.IPv4len || len(value) == net.IPv6len {
+			nameservers[i] = net.IP(value).String()
+		} else if len(value) > net.IPv6len {
+			nameservers[i] = net.IP(value[:net.IPv6len]).String()
+			nameservers[i] += "%" + string(value[net.IPv6len:])
+		} else {
+			nameservers[i] = string(value)
+		}
+
+		i += 1
+	}
+
+	return
+}
 
 func (p *Provider) GetNodeLabels() (labels map[string]string) {
 	l := GetMultiValue("Node-Label-")
