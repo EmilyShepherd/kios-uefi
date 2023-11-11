@@ -36,7 +36,7 @@ func (p *Provider) GetClusterAuthInfo() kubeconfig.AuthInfo {
 
 // TODO
 func (p *Provider) GetCredentialProviders() []kubelet.CredentialProvider {
-	return []kubelet.CredentialProvider{kubelet.CredentialProvider{}}
+	return []kubelet.CredentialProvider{}
 }
 
 const Hostname = "Hostname"
