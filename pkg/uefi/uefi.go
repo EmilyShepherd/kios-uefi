@@ -9,9 +9,19 @@ import (
 
 const KiosGuid = "3a3ae00f-cf4d-4977-8766-8ea575f6bf4f"
 
-const EfiVarsDirectory = "/sys/firmware/efi/efivars"
+const DefaultEfiVarsDirectory = "/sys/firmware/efi/efivars"
 const BootCurrent = "BootCurrent-8be4df61-93ca-11d2-aa0d-00e098032b8c"
 const EfiVarFs = "efivarfs"
+
+var EfiVarsDirectory string = GetEfiDirectory()
+
+func GetEfiDirectory() string {
+	if efiDir := os.Getenv("EFI_DIRECTORY"); efiDir != "" {
+		return efiDir
+	}
+
+	return DefaultEfiVarsDirectory
+}
 
 func EnsureEfiVarFs() error {
 	if _, err := os.Stat(EfiVarsDirectory + "/" + BootCurrent); err == nil {
